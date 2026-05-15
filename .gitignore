@@ -1,0 +1,9 @@
+data/*
+exports/*
+
+!data/.gitkeep
+!exports/.gitkeep
+
+rentdb
+*.dat
+*.csv
