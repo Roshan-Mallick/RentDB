@@ -1,8 +1,23 @@
 #include <stdio.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "../include/export.h"
 #include "../include/rent.h"
+
+/*
+ * Default export location.
+ *
+ * Users can change this path to any custom directory.
+ *
+ * Example for Google Drive auto-sync using rclone:
+ *
+ * #define EXPORT_PATH "/home/your-linux-username/gdrive/RENT & ELECTRIC BILL/RentDB/rent.csv"
+ *
+ * This allows exported CSV files to automatically sync
+ * with Google Drive and become accessible from anywhere.
+ */
 
 #define EXPORT_PATH "exports/rent_report.csv"
 
@@ -32,7 +47,7 @@ void exportRentCSV()
 
     RentRecord record;
 
-    while (fread(&record, sizeof(RentRecord), 1, datFile))
+    while (fread(&record, sizeof(RentRecord), 1, datFile) == 1)
     {
         fprintf(
             csvFile,
@@ -44,6 +59,8 @@ void exportRentCSV()
             record.transactionId
         );
     }
+
+    fflush(csvFile);
 
     fclose(datFile);
     fclose(csvFile);
