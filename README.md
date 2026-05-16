@@ -313,7 +313,7 @@ src/export.c
 Example:
 
 ```c
-#define EXPORT_PATH "/home/your-linux-username/gdrive/RENT & ELECTRIC BILL/RentDB/rent.csv"
+#define EXPORT_PATH "/home/your-linux-username/gdrive/RENT & ELECTRIC BILL/RentDB/rent.csv" // Example path used during testing for my Google Drive
 ```
 
 Replace:
