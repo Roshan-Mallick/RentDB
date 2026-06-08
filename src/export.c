@@ -2,24 +2,93 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 #include "../include/export.h"
 #include "../include/rent.h"
 
-/*
- * Default export location.
- *
- * Users can change this path to any custom directory.
- *
- * Example for Google Drive auto-sync using rclone:
- *
- * #define EXPORT_PATH "/home/your-linux-username/gdrive/RENT & ELECTRIC BILL/RentDB/rent.csv"
- *
- * This allows exported CSV files to automatically sync
- * with Google Drive and become accessible from anywhere.
- */
+#define BACKUP_REPO "/home/eth0x1/rent_database"
+#define EXPORT_PATH BACKUP_REPO "/exports/rent.csv"
 
-#define EXPORT_PATH "exports/rent_report.csv"
+static int runCommand(const char *command)
+{
+    int status = system(command);
+
+    if (status == -1)
+    {
+        perror("Failed to run command");
+        return -1;
+    }
+
+    if (WIFEXITED(status))
+    {
+        return WEXITSTATUS(status);
+    }
+
+    return -1;
+}
+
+static void backupToGitHub(void)
+{
+    char originalDir[4096];
+
+    if (getcwd(originalDir, sizeof(originalDir)) == NULL)
+    {
+        perror("Failed to get current directory");
+        return;
+    }
+
+    printf("\nBacking up to GitHub...\n");
+
+    if (chdir(BACKUP_REPO) != 0)
+    {
+        perror("Failed to enter backup repository");
+        printf("CSV saved locally at: %s\n", EXPORT_PATH);
+        return;
+    }
+
+    int status = runCommand("git add exports/rent.csv");
+
+    if (status != 0)
+    {
+        printf("[!] git add failed (exit code %d)\n", status);
+        chdir(originalDir);
+        return;
+    }
+
+    status = runCommand("git commit -m \"RentDB export update\"");
+
+    if (status == 0)
+    {
+        printf("[✓] Changes committed\n");
+    }
+    else if (status == 1)
+    {
+        printf("[✓] No changes since last backup\n");
+        chdir(originalDir);
+        return;
+    }
+    else
+    {
+        printf("[!] git commit failed (exit code %d)\n", status);
+        chdir(originalDir);
+        return;
+    }
+
+    status = runCommand("git push origin main");
+
+    if (status != 0)
+    {
+        printf("[!] git push failed (exit code %d)\n", status);
+        printf("CSV saved locally at: %s\n", EXPORT_PATH);
+        chdir(originalDir);
+        return;
+    }
+
+    printf("[✓] GitHub backup completed successfully\n");
+
+    chdir(originalDir);
+}
 
 void exportRentCSV()
 {
@@ -70,4 +139,6 @@ void exportRentCSV()
     printf("====================================\n");
 
     printf("Exported File:\n%s\n", EXPORT_PATH);
+
+    backupToGitHub();
 }
