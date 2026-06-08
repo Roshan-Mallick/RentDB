@@ -2,7 +2,17 @@
 
 RentDB is a modular CLI-based rent management system written in C.
 
-It provides a simple and efficient way to manage rent records, store data persistently, export reports, and automatically back up exported data to a GitHub repository.
+It is designed to manage tenant rent records, payment tracking, CSV exports, and automatic GitHub backups using a structured and scalable project architecture.
+
+This project focuses on learning:
+
+* Modular C programming
+* File handling in C
+* Data management using structures
+* CLI application design
+* Build automation using Makefiles
+* CSV export systems
+* Git and GitHub automation
 
 ---
 
@@ -14,7 +24,7 @@ It provides a simple and efficient way to manage rent records, store data persis
 * Persistent binary database storage
 * CSV export support
 * Automatic GitHub backup
-* Modular C project architecture
+* Modular source and header separation
 * Makefile-based build system
 * Linux-friendly workflow
 
@@ -41,7 +51,6 @@ RentDB/
 │   └── utils.c
 │
 ├── exports/
-│   └── rent.csv
 │
 ├── Makefile
 ├── README.md
@@ -67,28 +76,9 @@ sudo dnf install gcc make git
 
 ---
 
-# Step 1 — Clone RentDB
+# Build Instructions
 
-Example:
-
-```bash
-git clone git@github.com:johnsmith/RentDB.git
-cd RentDB
-```
-
-Replace:
-
-```text
-johnsmith
-```
-
-with your GitHub username.
-
----
-
-# Step 2 — Build Project
-
-Compile:
+Compile the project:
 
 ```bash
 make
@@ -108,78 +98,73 @@ make clean
 
 ---
 
-# Step 3 — Create a GitHub Backup Repository
+# GitHub Backup Setup (One-Time)
 
-Create a new repository.
+## Step 1 — Create a Private Repository
 
-Example name:
+Create a private GitHub repository.
+
+Example:
 
 ```text
 rent_database
 ```
 
-Recommended:
+Do not initialize it with:
 
-* Private repository
-* No README
-* No .gitignore
-* No License
+* README
+* .gitignore
+* License
 
 ---
 
-# Step 4 — Clone Backup Repository
+## Step 2 — Clone the Backup Repository
 
 Example:
 
 ```bash
-git clone git@github.com:johnsmith/rent_database.git
+git clone git@github.com:YOUR_GITHUB_USERNAME/rent_database.git ~/rent_database
 ```
 
 This creates:
 
 ```text
-/home/john/rent_database
+/home/YOUR_USERNAME/rent_database
 ```
 
 ---
 
-# Step 5 — Configure SSH Authentication
+## Step 3 — Configure SSH Authentication
 
-Generate SSH key:
+Generate an SSH key:
 
 ```bash
-ssh-keygen -t ed25519 -C "user@example.com"
+ssh-keygen -t ed25519 -C "your_email@example.com"
 ```
 
-Start SSH agent:
+Start the SSH agent:
 
 ```bash
 eval "$(ssh-agent -s)"
 ```
 
-Add key:
+Add the key:
 
 ```bash
 ssh-add ~/.ssh/id_ed25519
 ```
 
-Display public key:
+Display your public key:
 
 ```bash
 cat ~/.ssh/id_ed25519.pub
-```
-
-Example output:
-
-```text
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExamplePublicKey1234567890 user@example.com
 ```
 
 Copy the output.
 
 ---
 
-# Step 6 — Add SSH Key to GitHub
+## Step 4 — Add SSH Key to GitHub
 
 Open:
 
@@ -190,58 +175,44 @@ GitHub
 → New SSH Key
 ```
 
-Paste the public key and save.
+Paste your public key and save.
 
 ---
 
-# Step 7 — Verify SSH
-
-Run:
+## Step 5 — Verify SSH Access
 
 ```bash
 ssh -T git@github.com
 ```
 
-Example output:
+Expected output:
 
 ```text
-Hi johnsmith! You've successfully authenticated,
+Hi YOUR_GITHUB_USERNAME! You've successfully authenticated,
 but GitHub does not provide shell access.
 ```
 
 ---
 
-# Step 8 — Configure Backup Repository
-
-Navigate:
+## Step 6 — Create Export Directory
 
 ```bash
 cd ~/rent_database
-```
-
-Create export folder:
-
-```bash
-mkdir exports
-```
-
-Create placeholder file:
-
-```bash
+mkdir -p exports
 touch exports/.gitkeep
 ```
 
-Commit:
+Initial commit:
 
 ```bash
 git add .
-git commit -m "Initial export structure"
+git commit -m "Initial repository structure"
 git push -u origin main
 ```
 
 ---
 
-# Step 9 — Configure Export Path
+## Step 7 — Configure Export Path
 
 Open:
 
@@ -252,19 +223,11 @@ src/export.c
 Update:
 
 ```c
-#define BACKUP_REPO "/home/john/rent_database"
+#define BACKUP_REPO "/home/YOUR_USERNAME/rent_database"
 #define EXPORT_PATH BACKUP_REPO "/exports/rent.csv"
 ```
 
-Replace:
-
-```text
-john
-```
-
-with your Linux username.
-
-Check username:
+Check your Linux username:
 
 ```bash
 whoami
@@ -278,7 +241,7 @@ john
 
 ---
 
-# Step 10 — Build Again
+## Step 8 — Rebuild
 
 ```bash
 make clean
@@ -287,61 +250,12 @@ make
 
 ---
 
-# Step 11 — Run Application
+# CSV Export System
 
-```bash
-./rentdb
-```
-
-Menu:
-
-```text
-====================================
-       RENT DATABASE SYSTEM
-====================================
-1. Add Rent Record
-2. View Rent Records
-3. Edit Rent Record
-4. Export CSV
-0. Exit
-```
-
----
-
-# Step 12 — Export CSV
-
-Select:
-
-```text
-4
-```
-
-The application automatically:
-
-```text
-RentDB
-   ↓
-Read rent.dat
-   ↓
-Generate rent.csv
-   ↓
-Save to backup repository
-   ↓
-git add
-   ↓
-git commit
-   ↓
-git push
-   ↓
-GitHub Backup Complete
-```
-
----
-
-# CSV Format
+Exported CSV format:
 
 ```csv
-PAYMENT DATE,RENT PERIOD,AMOUNT,STATUS,TRANSACTION ID
+PAYMENT DATE,RENT_PERIOD,AMOUNT,STATUS,TRANSACTION_ID
 ```
 
 Example:
@@ -352,17 +266,35 @@ Example:
 
 ---
 
-# Automatic GitHub Backup
+# Export and Backup Workflow
 
-The export module automatically executes:
+Inside the application:
 
-```bash
-git add exports/rent.csv
-git commit -m "RentDB export update"
-git push origin main
+```text
+4. Export CSV
 ```
 
-No manual Git commands are required after setup.
+The workflow is:
+
+```text
+RentDB
+   ↓
+Read data/rent.dat
+   ↓
+Generate rent.csv
+   ↓
+Save to ~/rent_database/exports/rent.csv
+   ↓
+git add
+   ↓
+git commit
+   ↓
+git push
+   ↓
+Private GitHub repository updated
+```
+
+No manual Git commands are required after the one-time setup.
 
 ---
 
@@ -412,7 +344,7 @@ If authentication fails:
 ssh-add ~/.ssh/id_ed25519
 ```
 
-and confirm the public key is added to GitHub.
+and ensure the public key has been added to GitHub.
 
 ---
 
@@ -427,7 +359,7 @@ git remote -v
 Example:
 
 ```text
-origin git@github.com:johnsmith/rent_database.git
+origin git@github.com:YOUR_GITHUB_USERNAME/rent_database.git
 ```
 
 ---
@@ -448,17 +380,25 @@ rent.csv
 
 ---
 
+# Important Notes
+
+* SSH authentication must be configured before automatic pushes can work.
+* The backup repository must contain at least one commit before the first export.
+* If `git push` fails, the CSV is still saved locally.
+* If no CSV changes are detected, the backup system reports "No changes since last backup".
+
+---
+
 # Future Improvements
 
-* Delete rent records
-* Search records
-* Filter records
-* Monthly statistics
-* PDF export
-* SQLite database support
-* User authentication
+* SQLite database integration
+* PDF export system
+* Search and filter support
 * Tenant management
-* Dashboard version
+* Monthly analytics
+* Timestamped export archives
+* Authentication system
+* Web dashboard version
 * REST API version
 
 ---
@@ -469,7 +409,7 @@ This project was built to practice:
 
 * Modular C programming
 * Structures and file handling
-* Persistent storage systems
+* Persistent data systems
 * CSV report generation
 * Git automation
 * GitHub integration
@@ -481,3 +421,4 @@ This project was built to practice:
 # License
 
 This project is open-source and intended for learning and educational purposes.
+
